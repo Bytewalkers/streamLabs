@@ -19,8 +19,7 @@ $(document).ready(() => {
             CHAT_ID: '',
             LOAD: false,
             QUERY: '',
-            REFRESH_RATE: 4000,
-            CHAT_MSG_IDS: []
+            REFRESH_RATE: 4000
           }
         }
       }
@@ -122,6 +121,20 @@ $(document).ready(() => {
         console.log(m)
       }
 
+      resetChat() {
+        let chatContainer = $(this.getChatElement())
+        chatContainer.empty()
+        $('#chatInput').val('')
+        $('.hype').text('')
+        this.setChatData({
+          ELEMENT: '',
+          VIDEO_ID: '',
+          CHAT_ID: '',
+          LOAD: false,
+          QUERY: '',
+        })
+      }
+
       showError (msg) {
         this.log('error', msg)
         msg = typeof msg !== 'undefined' && msg.length > 0 ? msg : 'Something went wrong.'
@@ -191,6 +204,7 @@ $(document).ready(() => {
         let containerEle = '#listView > div'
         $(containerEle).empty()
         newApp.setVideoData(resp.data)
+        newApp.resetChat()
         if (Object.keys(resp.data).length === 0 &&
           resp.data.constructor === Object
         ) {
