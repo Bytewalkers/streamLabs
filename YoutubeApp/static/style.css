@@ -1,0 +1,88 @@
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  height: auto;
+  font-size: 14px;
+  width: 100wh;
+  background: #f0f2f5;
+  padding-bottom: 20px;
+}
+
+body > * {
+  height: auto;
+  min-height: inherit;
+}
+
+#app .logo {
+  font-family: 'Dosis', sans-serif;
+  font-size: 200%;
+}
+
+#app .h100 {
+  height: 100%;
+}
+
+#app .mh100 {
+  min-height: 100%;
+}
+
+#app .hidden {
+  display: none;
+}
+
+#loginButton {
+  background: url('/static/btn_google_signin_dark_normal_web.png');
+  width: 191px;
+  height: 46px;
+  cursor: hand;
+}
+
+#loginButton:hover {
+  background: url('/static/btn_google_signin_dark_pressed_web.png');
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.truncate3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+i.icon.redo {
+  cursor: hand;
+}
+#videoView .ui.comments.column {
+  min-width: 100%;
+}
+.videoContainer {
+    position: relative;
+    width: 100%;
+    min-height: 450px;
+    padding-bottom: 56.25%;
+}
+iframe#ytplayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#app .ui.segment.chatContainer {
+  background-color: #ccc;
+}

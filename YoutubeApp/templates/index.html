@@ -1,0 +1,81 @@
+<html>
+  <head>
+      <title>Youtube Live Stream</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="icon" type="image/x-icon" class="js-site-favicon" href="/static/favicon.ico">
+
+      <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css?family=Dosis:400,700" rel="stylesheet">
+      <link rel="stylesheet" type="text/css" href="/static/semantic.min.css">
+      <link rel="stylesheet" type="text/css" href="/static/style.css">
+  </head>
+  <body>
+    <div id="app">
+      <div class="ui segment mh100">
+        <div class="ui active inverted dimmer">
+          <div class="ui text loader">Loading</div>
+        </div>
+        <div id="pageContent h100">
+          <div class="ui secondary menu">
+            <a class="logo ui item" href="/">
+              YoutubeStream
+            </a>
+            <div class="right menu">
+              <div class="item">
+                <div class="ui icon input">
+                  <input type="text" id="searchInput" placeholder="Search...">
+                  <i class="search link icon"></i>
+                </div>
+              </div>
+              <span class="item">
+                <i class="redo icon"></i>
+              </span>
+              <a class="active item" href="/">
+                Home
+              </a>
+              <a class="ui item" id="logoutButton" href="/logout">
+                Logout
+              </a>
+            </div>
+          </div>
+
+          <div id="content" class="hidden">
+            <div class="ui negative message hidden">
+              <i class="close icon"></i>
+              <div class="header">
+              </div>
+            </div>
+            <div id="loginView">
+              <div class="ui four column page center aligned grid">
+                <div id="loginButton"></div>
+              </div>
+            </div>
+            <div id="listView">
+              <div id="cards" class="ui four column page grid"></div>
+            </div>
+            <div id="videoView">
+              <div class="ui one column stacked page grid">
+                <div class="videoContainer column"></div>
+                <div class="ui comments column">
+                  <h3 class="ui dividing header">Chat</h3>
+                  <div class="ui segment chatContainer"  style="height:200px;overflow:scroll;">
+                    loading chat...
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="searchChatView">
+              chat search
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous"></script>
+    <script src="/static/semantic.min.js"></script>
+  <script src="/static/script.js"></script>
+  </body>
+</html>
