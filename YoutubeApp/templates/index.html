@@ -1,6 +1,6 @@
 <html>
   <head>
-      <title>Youtube Live Stream</title>
+      <title>YoutubeStream Live</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link rel="icon" type="image/x-icon" class="js-site-favicon" href="/static/favicon.ico">
 
@@ -33,7 +33,7 @@
               <a class="active item" href="/">
                 Home
               </a>
-              <a class="ui item" id="logoutButton" href="/logout">
+              <a class="ui item" href="/logout">
                 Logout
               </a>
             </div>
@@ -51,21 +51,22 @@
               </div>
             </div>
             <div id="listView">
-              <div id="cards" class="ui four column page grid"></div>
+              <div class="ui four column page grid"></div>
             </div>
             <div id="videoView">
               <div class="ui one column stacked page grid">
                 <div class="videoContainer column"></div>
                 <div class="ui comments column">
                   <h3 class="ui dividing header">Chat</h3>
+                  <div class="ui icon input">
+                    <input type="text" id="chatInput" placeholder="Search User...">
+                    <i class="search link icon"></i>
+                  </div>
                   <div class="ui segment chatContainer"  style="height:200px;overflow:scroll;">
                     loading chat...
                   </div>
                 </div>
               </div>
-            </div>
-            <div id="searchChatView">
-              chat search
             </div>
           </div>
         </div>

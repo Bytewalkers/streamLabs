@@ -66,10 +66,15 @@ body > * {
 i.icon.redo {
   cursor: hand;
 }
+
+.ui.page {
+  padding: 30px;
+}
+
 #videoView .ui.comments.column {
   min-width: 100%;
 }
-.videoContainer {
+.videoContainer > div.iframeContainer {
     position: relative;
     width: 100%;
     min-height: 450px;
@@ -84,5 +89,6 @@ iframe#ytplayer {
 }
 
 #app .ui.segment.chatContainer {
+  min-height: 250px;
   background-color: #ccc;
 }

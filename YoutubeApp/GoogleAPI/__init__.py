@@ -1,7 +1,10 @@
 import os
+import time
+import httplib2
 import google.oauth2.credentials
 import googleapiclient.discovery
 from googleapiclient.errors import HttpError
+from google.auth.exceptions import RefreshError
 import google_auth_oauthlib.flow
 from datetime import datetime, timezone
 
@@ -94,6 +97,13 @@ class GoogleAPI:
                 False,
                 'An HTTP error occurred'
             )
+        except httplib2.ServerNotFoundError:
+            return self.getResponseObj(
+                False,
+                'Server Unable to reach googleapis.com'
+            )
+        except RefreshError as r:
+            return redirect('/logout')
         except:
             return redirect('/logout')
 
@@ -146,25 +156,26 @@ class GoogleAPI:
         ).execute()
         chatItems = chatData['items']
         chatList = {
-            d['id']: {
+            int(time.mktime(datetime.strptime(
+                d['snippet']['publishedAt'],
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            ).timetuple())): {
             'id': d['id'],
             'authorName': d['authorDetails']['displayName'],
             'msg': d['snippet']['displayMessage'],
-            'time': d['snippet']['publishedAt']
+            'time': d['snippet']['publishedAt'],
+            'timestamp': int(time.mktime(datetime.strptime(
+                d['snippet']['publishedAt'],
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            ).timetuple()))
         } for d in chatItems}
 
         if not query:
             chatListFiltered = chatList
         else:
             chatListFiltered = {
-                k: chatList[k] for k in chatList if chatList[k]['authorName'].lower() == query.lower()
+                k: chatList[k] for k in chatList if query.lower() in chatList[k]['authorName'].lower()
             }
-
-        #for k in chatList:
-        #    print(datetime.strptime(chatList[k]['time']))
-        #print chatList
-        #print chatList.sort(key=lambda x:x['time'])
-        # {k for k in chat}
         return self.getResponseObj(True, 'Chat data found', chatListFiltered)
 
     def credentials2Dict(self, credentials):
