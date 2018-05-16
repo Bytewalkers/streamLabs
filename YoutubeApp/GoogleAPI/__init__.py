@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 
 from flask import Flask, url_for, redirect, request, jsonify
 
+
 class GoogleAPI:
     def __init__(self):
         self.CLIENT_SECRETS_FILE = "client_secret.json"
@@ -18,7 +19,9 @@ class GoogleAPI:
         self.API_VERSION = 'v3'
         if os.environ.get('GOOGLE_CLIENT_SECRETS') is not None:
             with open(self.CLIENT_SECRETS_FILE, 'w') as secret_file:
-                secret_file.write(os.environ.get('GOOGLE_CLIENT_SECRETS', None))
+                secret_file.write(
+                    os.environ.get(
+                        'GOOGLE_CLIENT_SECRETS', None))
 
         self.endPoints = {
             'API_ROOT': '/api',
@@ -47,18 +50,21 @@ class GoogleAPI:
             scopes=self.SCOPES,
             state=state
         )
-        flow.redirect_uri = url_for('oauth2callback', _external=True)
-        authorization_response = request.url
-        flow.fetch_token(authorization_response=authorization_response)
-        credentials = flow.credentials
-        session['credentials'] = self.credentials2Dict(credentials)
+        try:
+            flow.redirect_uri = url_for('oauth2callback', _external=True)
+            authorization_response = request.url
+            flow.fetch_token(authorization_response=authorization_response)
+            credentials = flow.credentials
+            session['credentials'] = self.credentials2Dict(credentials)
+        except BaseException as be:
+            print('BaseException found whie logging in ', be)
+
         return redirect('/')
 
     def clearCredentials(self, session):
         if 'credentials' in session:
             del session['credentials']
         return redirect('/')
-
 
     def checkCredentials(self, session):
         if 'credentials' in session:
@@ -67,13 +73,14 @@ class GoogleAPI:
 
     def videoList(self, session, query, refresh=False):
         if 'credentials' not in session:
-            return self.getResponseObj(False,'Please login')
+            return self.getResponseObj(False, 'Please login')
 
         # Cached
         if hasattr(self, 'listOfLiveVideos') and not refresh:
             return self.getResponseObj(True, '200', self.listOfLiveVideos)
 
-        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+        credentials = google.oauth2.credentials.Credentials(
+            **session['credentials'])
         youtube = googleapiclient.discovery.build(
             self.API_SERVICE_NAME,
             self.API_VERSION,
@@ -92,22 +99,32 @@ class GoogleAPI:
                 order='viewCount'
             )
             self.listOfLiveVideos = videoData
-        except HttpError as e:
+        except HttpError as h:
+            print('HttpError whie loading videoList ', h)
             return self.getResponseObj(
                 False,
                 'An HTTP error occurred'
             )
-        except httplib2.ServerNotFoundError:
+        except httplib2.ServerNotFoundError as sn:
+            print('ServerNotFoundError whie loading videoList ', sn)
             return self.getResponseObj(
                 False,
                 'Server Unable to reach googleapis.com'
             )
         except RefreshError as r:
-            return redirect('/logout')
-        except:
-            return redirect('/logout')
+            print('RefreshError found whie loading videoList ', r)
+            return self.getResponseObj(
+                False,
+                'Please login again.'
+            )
+        except BaseException as be:
+            print('BaseException found whie loading videoList ', be)
+            return self.getResponseObj(
+                False,
+                'Something went wrong on the server.'
+            )
 
-        return self.getResponseObj(True, '200',videoData)
+        return self.getResponseObj(True, '200', videoData)
 
     def fetchVideoList(self, youtube, **kwargs):
         response = youtube.search().list(**kwargs).execute()
@@ -140,11 +157,13 @@ class GoogleAPI:
         response = youtube.videos().list(**kwargs).execute()
         items = response['items']
 
-        chatIds = {d['id']: d['liveStreamingDetails']['activeLiveChatId'] for d in items if 'liveStreamingDetails' in d and 'activeLiveChatId' in d['liveStreamingDetails'] }
+        chatIds = {d['id']: d['liveStreamingDetails']['activeLiveChatId']
+                   for d in items if 'liveStreamingDetails' in d and 'activeLiveChatId' in d['liveStreamingDetails']}
         return chatIds
 
     def getChatData(self, session, chatId, query):
-        credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+        credentials = google.oauth2.credentials.Credentials(
+            **session['credentials'])
         youtube = googleapiclient.discovery.build(
             self.API_SERVICE_NAME,
             self.API_VERSION,
@@ -155,40 +174,83 @@ class GoogleAPI:
             part='id,snippet,authorDetails'
         ).execute()
         chatItems = chatData['items']
-        chatList = {
-            int(time.mktime(datetime.strptime(
-                d['snippet']['publishedAt'],
-                "%Y-%m-%dT%H:%M:%S.%fZ"
-            ).timetuple())): {
-            'id': d['id'],
-            'authorName': d['authorDetails']['displayName'],
-            'msg': d['snippet']['displayMessage'],
-            'time': d['snippet']['publishedAt'],
-            'timestamp': int(time.mktime(datetime.strptime(
-                d['snippet']['publishedAt'],
-                "%Y-%m-%dT%H:%M:%S.%fZ"
-            ).timetuple()))
-        } for d in chatItems}
+        chatList = []
+        # tried multiple ways to create an array of dict, but key Error occured
+        p = 0
+        hype = '0'
+        try:
+            for d in chatItems:
+                shouldAddToList = True
+                if query and query.lower(
+                ) not in d['authorDetails']['displayName'].lower():
+                    shouldAddToList = False
+                if(shouldAddToList):
+                    t = {
+                        'id': d['id'],
+                        'authorName': d['authorDetails']['displayName'],
+                        'msg': d['snippet']['displayMessage'],
+                        'time': d['snippet']['publishedAt'],
+                        'timestamp': int(time.mktime(datetime.strptime(
+                            d['snippet']['publishedAt'],
+                            "%Y-%m-%dT%H:%M:%S.%fZ"
+                        ).timetuple()))
+                    }
+                    chatList.append(t)
+                    p += 1
+            chatListSorted = sorted(chatList, key=lambda k: k['timestamp'])
+            if chatListSorted:
+                max = datetime.strptime(
+                    chatListSorted[0]['time'],
+                    "%Y-%m-%dT%H:%M:%S.%fZ")
+                min = datetime.strptime(
+                    chatListSorted[-1]['time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                timeDifference = (min - max).total_seconds()
+                if timeDifference > 0:
+                    hype = str(len(chatListSorted) / timeDifference)
+        except HttpError as h:
+            print('HttpError whie loading chat ', h)
+            return self.getResponseObj(
+                False,
+                'An HTTP error occurred'
+            )
+        except httplib2.ServerNotFoundError as sn:
+            print('ServerNotFoundError whie loading chat ', sn)
+            return self.getResponseObj(
+                False,
+                'Server Unable to reach googleapis.com'
+            )
+        except RefreshError as r:
+            print('RefreshError found whie loading chat ', r)
+            return self.getResponseObj(
+                False,
+                'Please login again.'
+            )
+        except BaseException as be:
+            print('BaseException found whie loading chat ', be)
+            return self.getResponseObj(
+                False,
+                'Something went wrong on the server.'
+            )
 
-        if not query:
-            chatListFiltered = chatList
-        else:
-            chatListFiltered = {
-                k: chatList[k] for k in chatList if query.lower() in chatList[k]['authorName'].lower()
-            }
-        return self.getResponseObj(True, 'Chat data found', chatListFiltered)
+        return self.getResponseObj(
+            True,
+            'Chat data found',
+            chatListSorted,
+            {'hype': hype}
+        )
 
     def credentials2Dict(self, credentials):
-      return {'token': credentials.token,
-              'refresh_token': credentials.refresh_token,
-              'token_uri': credentials.token_uri,
-              'client_id': credentials.client_id,
-              'client_secret': credentials.client_secret,
-              'scopes': credentials.scopes}
+        return {'token': credentials.token,
+                'refresh_token': credentials.refresh_token,
+                'token_uri': credentials.token_uri,
+                'client_id': credentials.client_id,
+                'client_secret': credentials.client_secret,
+                'scopes': credentials.scopes}
 
-    def getResponseObj(self, flag, msg, data={}):
+    def getResponseObj(self, flag, msg, data={}, extras={}):
         return jsonify({
             'success': flag,
             'msg': msg,
-            'data': data
+            'data': data,
+            'extras': extras
         })

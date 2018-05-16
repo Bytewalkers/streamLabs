@@ -87,7 +87,7 @@ $(document).ready(() => {
             {url: url}
           ).done(
             (resp) => callback(resp)
-          ).fail((e) => this.showError('Network/API failed.'))
+          ).fail((e) => this.showError('Network/API failed. Chat disconneted.'))
         }
       }
 
@@ -123,12 +123,14 @@ $(document).ready(() => {
       }
 
       showError (msg) {
-        this.log('error')
+        this.log('error', msg)
         msg = typeof msg !== 'undefined' && msg.length > 0 ? msg : 'Something went wrong.'
         $('.ui.negative.message .header').text(msg)
         $('.ui.negative.message').removeClass('hidden')
         $('.ui.negative.message').show()
-        setTimeout($('.ui.negative.message').hide(), 5000)
+        setTimeout(() => {
+          $('.ui.negative.message').hide()
+        }, 5000)
       }
 
       showLogin () {
@@ -146,15 +148,15 @@ $(document).ready(() => {
           if (resp.success) {
             let chatContainer = $(newApp.getChatElement())
             chatContainer.empty()
-            if(Object.keys(resp.data).length === 0 &&
+            if (Object.keys(resp.data).length === 0 &&
               resp.data.constructor === Object
             ) {
-                chatContainer.append('<div class="comment" id="empty">\
+              chatContainer.append('<div class="comment" id="empty">\
                   <div class="content">\
                     <a class="author"> Live Chat not available</a>\
                   </div>\
                 </div>')
-                newApp.setChatLoad(false)
+              newApp.setChatLoad(false)
             } else {
               for (let k in resp.data) {
                 let time = new Date(resp.data[k]['timestamp'] * 1000).toLocaleString()
@@ -169,8 +171,13 @@ $(document).ready(() => {
                   </div>\
                 </div>')
               }
+              if (typeof resp.extras !== 'undefined' &&
+                typeof resp.extras.hype !== 'undefined'
+              ) {
+                $('.hype').text('Hype (messages/sec): ' + resp.extras.hype)
+              }
+              chatContainer.scrollTop(chatContainer.prop('scrollHeight'))
             }
-            chatContainer.scrollTop(chatContainer.prop('scrollHeight'))
           } else {
             newApp.showError(resp.msg)
           }
@@ -184,28 +191,36 @@ $(document).ready(() => {
         let containerEle = '#listView > div'
         $(containerEle).empty()
         newApp.setVideoData(resp.data)
-        $.each(resp.data, function (k, v) {
+        if (Object.keys(resp.data).length === 0 &&
+          resp.data.constructor === Object
+        ) {
           $(containerEle).append('<div class="column">\
-            <div id="' + k + '" class="ui fluid card">\
-              <a class="image" href="/#' + k + '">\
-                <img src="' + v.thumbnail + '">\
-              </a>\
-              <div class="content">\
-                <a class="header truncate" href="/#' + k + '">' + v.title + '</a>\
-                <div class="meta">\
-                  <a>' + v.channelTitle + '</a>\
-                </div>\
-                <div class="description truncate3">' + v.description + '</div>\
-              </div>\
-            </div>\
-          </div>')
-
-          $('.loader').parents().removeClass('active')
-          $('#content > div').hide()
-          $('#listView').show()
-          $('.right.menu').show()
+            <div>No result found</div></div> ')
           newApp.setChatLoad(false)
-        })
+        } else {
+          $.each(resp.data, function (k, v) {
+            $(containerEle).append('<div class="column">\
+              <div id="' + k + '" class="ui fluid card">\
+                <a class="image" href="/#' + k + '">\
+                  <img src="' + v.thumbnail + '">\
+                </a>\
+                <div class="content">\
+                  <a class="header truncate" href="/#' + k + '">' + v.title + '</a>\
+                  <div class="meta">\
+                    <a>' + v.channelTitle + '</a>\
+                  </div>\
+                  <div class="description truncate3">' + v.description + '</div>\
+                </div>\
+              </div>\
+            </div>')
+
+            $('.loader').parents().removeClass('active')
+            $('#content > div').hide()
+            $('#listView').show()
+            $('.right.menu').show()
+            newApp.setChatLoad(false)
+          })
+        }
       }), 0)
     }
 
