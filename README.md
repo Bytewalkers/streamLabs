@@ -1,14 +1,14 @@
 # streamLabs
 Stream Labs assignment.
-This assignment is a part of their recruitment process. Although I completed the task in time, I was not selected.
+This assignment is a part of their recruitment process. Although I completed the task on time, I was not selected.
 
-#### Feel free to review the code and provide me a feedback, so that I can improve
-
-
+#### Feel free to review the code and provide a feedback, so that I can improve this project.
 
 
 
-## Problem statement I was given.
+
+
+## Given Problem statement
 
 ### Mission
 
